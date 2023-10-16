@@ -1,0 +1,80 @@
+import random
+
+def initial_state(n):
+    return [random.randint(0, n-1) for _ in range(n)]
+
+def calculate_cost(state):
+    n = len(state)
+    cost = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            if state[i] == state[j] or abs(state[i] - state[j]) == j - i:
+                cost += 1
+    return cost
+
+def steepest_ascent_hill_climbing_with_sideways(n, max_sideways_moves):
+    best_state = initial_state(n)
+    best_cost = calculate_cost(best_state)
+    
+    num_sideways_moves = 0
+
+    while True:
+        neighbors = []
+        for col in range(n):
+            for row in range(n):
+                if best_state[col] != row:
+                    neighbor = list(best_state)
+                    neighbor[col] = row
+                    neighbors.append(neighbor)
+
+        if not neighbors:
+            break
+
+        current_best_cost = best_cost
+        best_neighbors = []
+        for neighbor in neighbors:
+            cost = calculate_cost(neighbor)
+            if cost < current_best_cost:
+                best_neighbors = [neighbor]
+                current_best_cost = cost
+            elif cost == current_best_cost and num_sideways_moves < max_sideways_moves:
+                best_neighbors.append(neighbor)
+
+        if best_cost == current_best_cost:
+            if not best_neighbors:
+                break
+            best_state = random.choice(best_neighbors)
+            num_sideways_moves += 1
+        else:
+            best_state = random.choice(best_neighbors)
+            best_cost = current_best_cost
+
+    return best_state, best_cost
+
+def main():
+    success_count = 0
+    success_steps = 0
+    failure_count = 0
+    failure_steps = 0
+    num_runs = 1000
+    max_sideways_moves = 3
+
+    for _ in range(num_runs):
+        result, cost = steepest_ascent_hill_climbing_with_sideways(8, max_sideways_moves)
+        if cost == 0:
+            success_count += 1
+            success_steps += 1
+        else:
+            failure_count += 1
+            failure_steps += 1
+
+    avg_success_steps = success_steps / success_count if success_count > 0 else 0
+    avg_failure_steps = failure_steps / failure_count if failure_count > 0 else 0
+
+    print(f"Success Count: {success_count}")
+    print(f"Average Steps for Success: {avg_success_steps}")
+    print(f"Failure Count: {failure_count}")
+    print(f"Average Steps for Failure: {avg_failure_steps}")
+
+if __name__ == "__main__":
+    main()
